@@ -3,10 +3,7 @@
 //Api consts
 const api = window.ModuleApi;
 const React = api.React;
-const ReactBootstrap = api.ReactBootstrap;
-
-//bootstrap imports
-const Well = ReactBootstrap.Well;
+const {Well, Glyphicon} = api.ReactBootstrap;
 
 //dev imports
 const MenuItem = require('./menu/MenuItem.js');
@@ -119,7 +116,10 @@ class MenuView extends React.Component {
           header = group.group;
         }
         var groupHeader = (
-          <div>{header.replace(extensionRegex, '')}</div>
+          <div>
+            {header.replace(extensionRegex, '')}
+            <Glyphicon glyph="menu-right" style={{fontSize: '11px'}} />
+          </div>
         );
         var checkMenuItems = group.checks.map(function(check, checkIndex) {
           return (
