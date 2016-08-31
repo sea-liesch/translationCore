@@ -3,7 +3,7 @@
 //Api consts
 const api = window.ModuleApi;
 const React = api.React;
-const {Well, Glyphicon} = api.ReactBootstrap;
+const {Well, Glyphicon, Button} = api.ReactBootstrap;
 
 //dev imports
 const MenuItem = require('./menu/MenuItem.js');
@@ -111,15 +111,16 @@ class MenuView extends React.Component {
           });
         if (header) {
           header = header.header;
-        }
-        else {
-          header = group.group;
-        }
+        var rightGlyphStyle = {fontSize: '11px'};
+        var downGlyphStyle = {fontSize: '11px', display: none};
         var groupHeader = (
-          <div>
-            {header.replace(extensionRegex, '')}
-            <Glyphicon glyph="menu-right" style={{fontSize: '11px'}} />
-          </div>
+            <Button bsStyle="link" onClick={() => {
+              
+            }}>
+              {header.replace(extensionRegex, '')}
+              <Glyphicon glyph="menu-right" style={{rightGlyphStyle}} />
+              <Glyphicon glyph="menu-down" style={{downGlyphStyle}} />
+            </Button>
         );
         var checkMenuItems = group.checks.map(function(check, checkIndex) {
           return (
