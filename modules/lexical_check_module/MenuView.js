@@ -46,7 +46,7 @@ class MenuView extends React.Component {
   componentDidMount() {
     this.refs[`${this.currentGroupIndex} ${this.currentCheckIndex}`].setActive(true);
   }
-    
+
   goToNext() {
     this.unselectOldMenuItem();
     // if we need to move to the next group
@@ -62,7 +62,7 @@ class MenuView extends React.Component {
     }
     this.selectNewMenuItem();
   }
-  
+
   goToPrevious() {
     this.unselectOldMenuItem();
     // if we need to move to the previous group
@@ -78,18 +78,18 @@ class MenuView extends React.Component {
     }
     this.selectNewMenuItem();
   }
-  
+
   goToCheck(params) {
     this.unselectOldMenuItem();
     this.currentGroupIndex = params.groupIndex;
     this.currentCheckIndex = params.checkIndex;
     this.selectNewMenuItem();
   }
-  
+
   unselectOldMenuItem() {
     this.refs[`${this.currentGroupIndex} ${this.currentCheckIndex}`].setActive(false);
   }
-  
+
   selectNewMenuItem() {
     this.refs[`${this.currentGroupIndex} ${this.currentCheckIndex}`].setActive(true);
   }
@@ -112,11 +112,19 @@ class MenuView extends React.Component {
         if (header) {
           header = header.header;
         var rightGlyphStyle = {fontSize: '11px'};
-        var downGlyphStyle = {fontSize: '11px', display: none};
+        var downGlyphStyle = {fontSize: '11px', display: 'none'};
         var groupHeader = (
             <Button bsStyle="link" onClick={() => {
-              
-            }}>
+              if(downGlyphStyle.display == 'none'){
+                rightGlyphStyle.display = 'none';
+                delete downGlyphStyle.display;
+              }else{
+                downGlyphStyle.display = 'none';
+                delete rightGlyphStyle.display;
+              }
+            }}
+
+            >
               {header.replace(extensionRegex, '')}
               <Glyphicon glyph="menu-right" style={{rightGlyphStyle}} />
               <Glyphicon glyph="menu-down" style={{downGlyphStyle}} />
@@ -140,7 +148,7 @@ class MenuView extends React.Component {
             {checkMenuItems}
           </div>
         );
-      });
+      }});
       return (
       <div className='fill-height'>
         <Well className='fill-height' style={{overflowY: 'scroll', maxHeight: '750px', marginTop: "5px"}}>
