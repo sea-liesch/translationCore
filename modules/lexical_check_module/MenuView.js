@@ -113,24 +113,26 @@ class MenuView extends React.Component {
           header = header.header;
         var rightGlyphStyle = {fontSize: '11px'};
         var downGlyphStyle = {fontSize: '11px', display: 'none'};
+        group.isActive = false;
         var groupHeader = (
-            <Button bsStyle="link" onClick={() => {
-              if(downGlyphStyle.display == 'none'){
-                rightGlyphStyle.display = 'none';
-                delete downGlyphStyle.display;
-              }else{
-                downGlyphStyle.display = 'none';
-                delete rightGlyphStyle.display;
-              }
-            }}
-
-            >
+            <Button bsStyle="link"
+                    onClick={() => {
+                      if(group.isActive){
+                        group.isActive = false;
+                      }else{
+                        group.isActive = true;
+                      }
+                    }}
+                    style={{
+                      color: '#000',
+                      padding: '0px'
+                     }}>
               {header.replace(extensionRegex, '')}
-              <Glyphicon glyph="menu-right" style={{rightGlyphStyle}} />
-              <Glyphicon glyph="menu-down" style={{downGlyphStyle}} />
+              <Glyphicon glyph="collapse-down" style={{marginLeft: '10px'}} />
             </Button>
         );
         var checkMenuItems = group.checks.map(function(check, checkIndex) {
+          if(group.isActive){
           return (
             <div key={checkIndex}>
               <MenuItem
@@ -141,6 +143,9 @@ class MenuView extends React.Component {
                 ref={groupIndex.toString() + ' ' + checkIndex.toString()} />
             </div>
           );
+          }else{
+            return;
+          }
         });
         return (
           <div key={groupIndex}>
