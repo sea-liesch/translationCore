@@ -35,8 +35,20 @@ class Door43DataFetcher {
 	getBooks(url, callback= () => ({})) {
 		var _this = this;
 		var url = url || GITHUB_API_NOTES;
-		var request = new XMLHttpRequest();
-
+		//
+		//var request = new XMLHttpRequest();
+		window.ModuleApi.HTTPRequest('GET', url + "?" + AUTHENTICATION, function(event){
+			var obj = event;
+			//Invalid response
+			if (obj == null) {
+				return;
+			}
+			else {
+				var bookObj = getChaptersFromObject(obj);
+				_this.bookList = bookObj;
+				callback(null, bookObj);
+			}
+		});
 		/** Retrieves the bookAbbreviation and api link from
 		 * the request
 		 */
@@ -48,25 +60,23 @@ class Door43DataFetcher {
 			return bookList;
 		}
 
-		request.onload = function() {
-			var obj = getJSONFromData(this);
-			//Invalid response
-			if (obj == null) {
-				callback(INVALID_DATA);
-			}
-			else {
-				var bookObj = getChaptersFromObject(obj);
-				_this.bookList = bookObj;
-				callback(null, bookObj);
-			}
-		}
+		// request.onload = function() {
+		// 	var obj = getJSONFromData(this);
+		// 	//Invalid response
+		// 	if (obj == null) {
+		// 		callback(INVALID_DATA);
+		// 	}
+		// 	else {
 
-		request.onerror = function() {
-			callback(REQUEST_FAILURE);
-		}
+		// 	}
+		// }
 
-		request.open('GET', url + "?" + AUTHENTICATION, true);
-		request.send();
+		// request.onerror = function() {
+		// 	callback(REQUEST_FAILURE);
+		// }
+
+		// request.open('GET', url + "?" + AUTHENTICATION, true);
+		// request.send();
 	}
 
 	/**
@@ -91,6 +101,15 @@ class Door43DataFetcher {
   }
 
     getBookDataCallback(error, bookObj, progress, callback) {
+
+		function countVerses(chapterArray) {
+			var totalVerses = 0;
+			for (var chapter of chapterArray) {
+				//assuming chapter['verses'] is an array
+				totalVerses += chapter['verses'].length;
+			}
+			return totalVerses;
+		}
         if (error) {
             callback(error);
         }
@@ -117,7 +136,7 @@ class Door43DataFetcher {
                     if (doneChapters >= totalChapters) {
                         //reassign github objects to our objects
                         bookObj['chapters'] = chapters;
-                        totalVerses = this.countVerses(bookObj['chapters']);
+                        totalVerses = countVerses(bookObj['chapters']);
                         var numVerses = 0;
                         for (let _chapter of bookObj['chapters']) {
                             let verses = [];
@@ -163,15 +182,6 @@ class Door43DataFetcher {
         }
     }
 
-	countVerses(chapterArray) {
-		var totalVerses = 0;
-		for (var chapter of chapterArray) {
-			//assuming chapter['verses'] is an array
-			totalVerses += chapter['verses'].length;
-		}
-		return totalVerses;
-	}
-
 	/**
 	 * @description: Gets the initial book data using the github api link within this.bookList
 	 * @param {string} bookAbbr: three letter string that denotes the book
@@ -180,7 +190,6 @@ class Door43DataFetcher {
 	 */
 	getBookData(bookAbbr, callback= () => ({})) {
 		var _this = this;
-
 		if (!this.bookList) {
 			//call this.getBooks
 			this.getBooks(null,
@@ -201,12 +210,9 @@ class Door43DataFetcher {
 			}
 			else {
 				var link = this.bookList[bookAbbr];
-
-				var request = new XMLHttpRequest();
-
-				request.onload = function() {
+				window.ModuleApi.HTTPRequest('GET', link + "&" + AUTHENTICATION, function(event){
 					var bookLink = _this.bookList[bookAbbr];
-					var chapterObj = getJSONFromData(this);
+					var chapterObj = event;
 					if (!chapterObj) {
 						callback(INVALID_DATA);
 					}
@@ -216,15 +222,7 @@ class Door43DataFetcher {
 					_this.bookList[bookAbbr]['link'] = bookLink;
 
 					callback(null, _this.bookList[bookAbbr]);
-
-				}
-
-				request.onerror = function() {
-					callback(REQUEST_FAILURE);
-				}
-
-				request.open('GET', link + "&" + AUTHENTICATION, true);
-				request.send();
+				});
 			}
 		}
 	}
@@ -242,24 +240,15 @@ class Door43DataFetcher {
 			chapterObj['link'] = link;
 			chapterObj['num'] = chapterData.name;
 
-			var request = new XMLHttpRequest();
-
-			request.onload = function() {
-				var verseObj = getJSONFromData(this);
+			//var request = new XMLHttpRequest();
+			window.ModuleApi.HTTPRequest('GET', link + "&" + AUTHENTICATION, function(event){
+				var verseObj = event;
 				if (verseObj == null) {
 					callback(INVALID_DATA);
 				}
 				chapterObj['verses'] = verseObj;
 				callback(null, chapterObj);
-
-			}
-
-			request.onerror = function() {
-				callback(REQUEST_FAILURE);
-			}
-
-			request.open('GET', link + "&" + AUTHENTICATION, true);
-			request.send();
+			});
 		}
 		else {
 			//we've hit a non directory, something like 'home.txt' that
@@ -301,6 +290,8 @@ class Door43DataFetcher {
    * @param {Object} book - book object from getBook() function that is to be parsed
    */
   getULBFromBook(book = {chapters: []}) {
+	window.ModuleApi.runFunctionThroughWorker(
+	function(){
     let ulbData = {chapters: []};
     if (!book.chapters) {
       console.error("Error: Input object is in incorrect format");
@@ -315,10 +306,10 @@ class Door43DataFetcher {
           [,regRes] = usfmRegex.exec(v.file);
         }
         catch (e) {
-          if (!suppress) {
-            console.warn("ULB Parse Warning: No ULB Data for chapter " + ch.num + " verse " + v.num);
-            console.warn("File may be in incorrect format");
-          }
+        //   if (!suppress) {
+        //     console.warn("ULB Parse Warning: No ULB Data for chapter " + ch.num + " verse " + v.num);
+        //     console.warn("File may be in incorrect format");
+        //   }
           continue;
         }
         let parsed = USFMParser(regRes).chapters[0];
@@ -329,6 +320,8 @@ class Door43DataFetcher {
         ulbData.chapters.push(chap);
     }
     return ulbData;
+		}
+	, book, () => {})
   }
 
   getTNFromBook(book = {chapters: []}, bookAbbr = "?") {
@@ -347,15 +340,5 @@ class Door43DataFetcher {
  * @param {XMLHttpRequest} httpRequest - request that is supposed to return
  * json object
  */
-function getJSONFromData(httpRequest) {
-
-	try {
-		return JSON.parse(httpRequest.response);
-	}
-	catch(error) {
-		console.error(error);
-		return null;
-	}
-}
 
 module.exports = Door43DataFetcher;

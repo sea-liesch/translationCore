@@ -318,6 +318,42 @@ class ModuleApi {
       return this.authToken[type];
     }
   }
+
+  HTTPRequest(type, url, callback) {
+    var worker = new Worker("worker.js");
+    worker.onerror = function (e) { console.log("Worker error: ", e) };
+    worker.postMessage({
+      openRequest: {type: type, url:url, async:true}
+    });
+    worker.onmessage = function (event) {
+      callback(event.data);
+      worker.terminate();
+    }
+  }
+
+  runFunctionThroughWorker(block, param, callback) {
+    // console.log(aFunction.toString());
+    // var blobURL = URL.createObjectURL(new Blob([
+    //   '(',
+    //   aFunction.toString(),
+    //   ')()'
+    // ], { type: 'application/javascript' })),
+    //   worker = new Worker(blobURL);
+    //   worker.onmessage = function (event) {
+    //   callback(event.data);
+    // };
+    var functionToText = '('+
+    block + ')()';
+    var worker = new Worker("funcworker.js");
+    worker.onerror = function (e) { console.log("Worker error: ", e) };
+    worker.postMessage({
+      func: functionToText, 
+      param: param
+    });
+    worker.onmessage = function (event) {
+      callback(event.data);
+    }
+  }
 }
 
 const api = new ModuleApi();
