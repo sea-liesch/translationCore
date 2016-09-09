@@ -321,7 +321,7 @@ class Door43DataFetcher {
     }
     return ulbData;
 		}
-	, book, () => {})
+	, {book:book, USFMParser:USFMParser}, () => {})
   }
 
   getTNFromBook(book = {chapters: []}, bookAbbr = "?") {
@@ -330,6 +330,7 @@ class Door43DataFetcher {
       return {};
     }
     return TNParser(book, bookAbbr);
+	  
   }
 }
 

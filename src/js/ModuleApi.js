@@ -331,7 +331,8 @@ class ModuleApi {
     }
   }
 
-  runFunctionThroughWorker(block, param, callback) {
+  runFunctionThroughWorker(block, params, callback) {
+    var jsonparams = [];
     // console.log(aFunction.toString());
     // var blobURL = URL.createObjectURL(new Blob([
     //   '(',
@@ -342,13 +343,22 @@ class ModuleApi {
     //   worker.onmessage = function (event) {
     //   callback(event.data);
     // };
+    for (var el in params) {
+      if (typeof(params[el]) == "object") {
+      var x = JSON.stringify(params[el]);
+      }
+      if (typeof(params[el]) == "function") {
+        var x = params[el].toString();
+      }
+      jsonparams[el]=x;
+    }
     var functionToText = '('+
     block + ')()';
     var worker = new Worker("funcworker.js");
     worker.onerror = function (e) { console.log("Worker error: ", e) };
     worker.postMessage({
       func: functionToText, 
-      param: param
+      params: jsonparams
     });
     worker.onmessage = function (event) {
       callback(event.data);
