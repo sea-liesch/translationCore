@@ -7,6 +7,7 @@ event from the CheckStore and automatically swap out the check module for the ne
 var React = require('react');
 var Button = require('react-bootstrap/lib/Button.js');
 var CoreStore = require('../../stores/CoreStore');
+var CoreActions = require('../../actions/CoreActions');
 var NextButton = require('../core/NextButton');
 var PreviousButton = require('../core/PreviousButton');
 
@@ -23,10 +24,18 @@ class ModuleWrapper extends React.Component {
   render() {
     // TODO: should probably return an empty div if this.state.view doesn't exist
     // but for now it has LexicalCheck as default
-    if(!this.state.view) {
-      return(
+    if (!this.state.view) {
+          if (CoreStore.doneLoading && CoreStore.modProgressView == false) {
+        if (api.getDataFromCommon('saveLocation') && api.getDataFromCommon('tcManifest')) {
+        CoreActions.updateCheckModal(true);
+      } else {
+        CoreActions.updateCheckModal(false);
+        api.Toast.info('Open a project first, then try again', '', 3);
+        CoreActions.showCreateProject("Languages");
+      }
+      }
+      return (
         <div>
-          <p>Click the apps button to start checking</p>
         </div>
       );
     }

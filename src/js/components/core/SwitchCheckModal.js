@@ -129,7 +129,18 @@ class SwitchCheckModal extends React.Component{
   }
 
   close() {
-    CoreActions.updateCheckModal(false);
+          if (CoreStore.doneLoading && CoreStore.modProgressView == false) {
+        if (api.getDataFromCommon('saveLocation') && api.getDataFromCommon('tcManifest')) {
+        CoreActions.updateCheckModal(true);
+      } else {
+        CoreActions.updateCheckModal(false);
+        api.Toast.info('Open a project first, then try again', '', 3);
+        CoreActions.showCreateProject("Languages");
+      }
+      }
+      else {
+      CoreActions.updateCheckModal(false);
+      }
   }
 
   render() {
