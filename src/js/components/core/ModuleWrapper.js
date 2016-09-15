@@ -21,19 +21,25 @@ class ModuleWrapper extends React.Component {
     this.updateCheckType = this.updateCheckType.bind(this);
   }
 
+  dontShowBlankScreen() {
+    if (CoreStore.doneLoading && CoreStore.modProgressView == false) {
+      if (api.getDataFromCommon('saveLocation') && api.getDataFromCommon('tcManifest')) {
+        CoreActions.updateCheckModal(true);
+      } else {
+        api.Toast.info('Open a project first, then try again', '', 3);
+        CoreActions.updateCheckModal(true);
+      }
+    }
+  }
+
+  // shouldComponentUpdate(nextProps, nextState){
+
+  // }
+
   render() {
     // TODO: should probably return an empty div if this.state.view doesn't exist
     // but for now it has LexicalCheck as default
     if (!this.state.view) {
-          if (CoreStore.doneLoading && CoreStore.modProgressView == false) {
-        if (api.getDataFromCommon('saveLocation') && api.getDataFromCommon('tcManifest')) {
-        CoreActions.updateCheckModal(true);
-      } else {
-        CoreActions.updateCheckModal(false);
-        api.Toast.info('Open a project first, then try again', '', 3);
-        CoreActions.showCreateProject("Languages");
-      }
-      }
       return (
         <div>
         </div>
@@ -73,7 +79,7 @@ class ModuleWrapper extends React.Component {
     else {
       this.setState({
         view: null
-      });
+      }, this.dontShowBlankScreen());
     }
   }
 }
