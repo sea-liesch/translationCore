@@ -22,7 +22,7 @@ class ModuleWrapper extends React.Component {
   }
 
   dontShowBlankScreen() {
-    if (CoreStore.doneLoading && CoreStore.modProgressView == false) {
+    if (CoreStore.doneLoading) {
       if (api.getDataFromCommon('saveLocation') && api.getDataFromCommon('tcManifest')) {
         CoreActions.updateCheckModal(true);
       } else {
