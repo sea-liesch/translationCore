@@ -10,6 +10,8 @@ var CoreStore = require('../../stores/CoreStore');
 var CoreActions = require('../../actions/CoreActions');
 var NextButton = require('../core/NextButton');
 var PreviousButton = require('../core/PreviousButton');
+var RecentProjects = require('./RecentProjects');
+var SwitchCheckModal = require('./SwitchCheckModal');
 
 const api = window.ModuleApi;
 
@@ -39,9 +41,21 @@ class ModuleWrapper extends React.Component {
   render() {
     // TODO: should probably return an empty div if this.state.view doesn't exist
     // but for now it has LexicalCheck as default
-    if (!this.state.view) {
-      return (
+    if(!this.state.view) {
+      var projects;
+      if (this.state.showApps) {
+        projects = <SwitchCheckModal.Component />
+      } else if (!api.getDataFromCommon('saveLocation') || !api.getDataFromCommon('tcManifest')) {
+        projects = <RecentProjects.Component onLoad={() => {
+          this.setState({showApps: true});
+        }}/>;
+      } else {
+        this.setState({showApps: true});
+        projects = <SwitchCheckModal.Component />
+      }
+      return(
         <div>
+          {projects}
         </div>
       );
     }

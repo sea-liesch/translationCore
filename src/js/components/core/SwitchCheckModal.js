@@ -21,29 +21,23 @@ const CheckDataGrabber = require('./create_project/CheckDataGrabber.js');
 const AppDescription = require('./AppDescription');
 const api = window.ModuleApi;
 
-class SwitchCheckModal extends React.Component{
+class SwitchCheck extends React.Component{
   constructor(){
     super();
     this.state ={
       showModal: false,
       moduleMetadatas: []
     }
-    this.updateCheckModal = this.updateCheckModal.bind(this);
   }
 
   componentWillMount() {
     var _this = this;
-    CoreStore.addChangeListener(this.updateCheckModal);
     this.getDefaultModules((moduleFolderPathList) => {
       _this.fillDefaultModules(moduleFolderPathList, (metadatas) => {
         _this.sortMetadatas(metadatas);
         _this.setState({moduleMetadatas: metadatas});
       });
     });
-  }
-
-  componentWillUnmount() {
-    CoreStore.removeChangeListener(this.updateCheckModal);
   }
 
   /**
@@ -113,7 +107,7 @@ class SwitchCheckModal extends React.Component{
   }
 
   moduleClick(folderName) {
-    this.close();
+    CoreActions.updateCheckModal(false);
     if (api.getDataFromCommon('saveLocation') && api.getDataFromCommon('tcManifest')) {
       CoreActions.startLoading();
       CheckDataGrabber.loadModuleAndDependencies(folderName);
@@ -131,7 +125,7 @@ class SwitchCheckModal extends React.Component{
   close() {
       CoreActions.updateCheckModal(false);
   }
-
+  
   render() {
     var buttons;
     if(!this.state.moduleMetadatas || this.state.moduleMetadatas.length == 0) {
@@ -151,6 +145,41 @@ class SwitchCheckModal extends React.Component{
         );
       });
     }
+    exports.buttons = buttons;
+    return (
+      <div>
+        {buttons}
+      </div>
+    );
+  }
+}
+
+class SwitchCheckModal extends React.Component {
+  constructor(){
+    super();
+    this.state ={
+      showModal: false,
+    }
+    this.updateCheckModal = this.updateCheckModal.bind(this);
+  }
+
+  updateCheckModal() {
+    this.setState({showModal: CoreStore.getCheckModal()});
+  }
+
+  close() {
+    CoreActions.updateCheckModal(false);
+  }
+
+  componentWillMount() {
+    CoreStore.addChangeListener(this.updateCheckModal);
+  }
+
+  componentWillUnmount() {
+    CoreStore.removeChangeListener(this.updateCheckModal);
+  }
+
+  render() {
     return (
       <div>
         <Modal show={this.state.showModal} onHide={this.close}>
@@ -158,7 +187,7 @@ class SwitchCheckModal extends React.Component{
             <Modal.Title>Change Check category</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {buttons}
+            <SwitchCheck />
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.close}>Close</Button>
@@ -169,4 +198,5 @@ class SwitchCheckModal extends React.Component{
   }
 }
 
-module.exports = SwitchCheckModal;
+exports.Component = SwitchCheck;
+exports.Modal = SwitchCheckModal
