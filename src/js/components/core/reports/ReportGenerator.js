@@ -30,6 +30,7 @@ ipcRenderer.on("report-closed", (event, path) => {
 });
 // boolean to keep track of if a report window is currently open
 let reportOpened = false;
+let reportViews = [];
 
 class Report extends React.Component {
   constructor() {
@@ -37,6 +38,7 @@ class Report extends React.Component {
   }
 
   render() {
+    //debugger;
     // get all of the checks associated with this project
     const listOfChecks = ModuleApi.getDataFromCommon("arrayOfChecks");
     const targetLang = ModuleApi.getDataFromCommon("targetLanguage");
@@ -47,10 +49,12 @@ class Report extends React.Component {
       return (<div>{"No target language found"}</div>);
     }
     // array of the functions in the ReportView.js's for the project
-    let reportViews = getReportViews();
-    if (reportViews.length == 0) {
-      return (<div>{"No report views found"}</div>);
-    }
+    getReportViews(function (reports) {
+      if (reports.length == 0) {
+        return (<div>{"No report views found"}</div>);
+      }
+      reportViews = reports;
+    });
     // array of JSX to be rendered
     // loop through all verses and chapters in the target language
     // and pass them into the ReportView functions
@@ -133,21 +137,22 @@ class Report extends React.Component {
   }
 }
 
-function getReportViews() {
+function getReportViews(callback) {
+  reports = [];
   // get folders in the modules directory
   // TODO: probably should make this asynchronous
   let modulesFolder = path.join(__base, "modules");
   // get only the folders and make them absolute paths
-  let modules = fs.readdirSync(modulesFolder);
-  modules = modules.map((dir) => path.join(modulesFolder, dir));
-  modules = modules.filter((dir) => fs.statSync(dir).isDirectory());
-  let reports = [];
-  modules.forEach((dir) => {
-    if(fs.readdirSync(dir).includes('ReportView.js')) {
-      reports.push(require(path.join(dir, "ReportView")));
+  fs.readdir(modulesFolder, function (err, modules) {
+    for (var module of modules) {
+      try {
+        let aReportView = require(path.join(modulesFolder, module, "ReportView.js"));
+        reports.push(aReportView);
+      } catch (e) {
+      }
     }
+    callback(reports);
   });
-  return reports;
 }
 
 module.exports = function(callback = (err) => {}) {
